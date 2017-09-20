@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">ArticleSearch</string>
+    <string name="filterItem">Filter</string>
+    <string name="headline">Headline</string>
+    <string name="description">Thumbnail</string>
+    <string name="search">Search</string>
 </resources>
