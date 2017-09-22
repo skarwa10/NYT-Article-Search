@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static java.security.AccessController.getContext;
-
 /**
  * Created by skarwa on 9/20/17.
  */
@@ -115,9 +113,9 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private void configureViewHolderWithImage(ViewHolderWithImage vh1, int position) {
         Article article = (Article) mArticles.get(position);
         if (article != null) {
-            vh1.tvTitle.setText(article.getHeadline());
+            vh1.tvTitle.setText(article.getmHeadline());
 
-            Picasso.with(getContext()).load(article.getThumbnail()).fit()
+            Picasso.with(getContext()).load(article.getmThumbnail()).fit()
                     .noFade()
                     .into(vh1.ivThumbnail);
         }
@@ -126,7 +124,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private void configureViewHolderWithNoImage(ViewHolderWithNoImage vh2,int position) {
         Article article = (Article) mArticles.get(position);
         if (article != null) {
-            vh2.tvTitle.setText(article.getHeadline());
+            vh2.tvTitle.setText(article.getmHeadline());
         }
     }
 
@@ -139,7 +137,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     //Returns the view type of the item at position for the purposes of view recycling.
     @Override
     public int getItemViewType(int position) {
-        return mArticles.get(position).getType().ordinal();
+        return mArticles.get(position).getmArticleType().ordinal();
     }
 
     

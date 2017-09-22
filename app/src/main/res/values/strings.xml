@@ -4,4 +4,14 @@
     <string name="headline">Headline</string>
     <string name="description">Thumbnail</string>
     <string name="search">Search</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+
+    <string name="fashion_style"><![CDATA[Fashion & Style]]></string>
+    <string name="arts">Arts</string>
+    <string name="sports">Sports</string>
+    <string name="news_desk_values">News Desk Values</string>
+    <string name="sort_order_label">Sort Order</string>
+    <string name="begin_date_label">Begin Date</string>
+    <string name="save_label">Save</string>
 </resources>
