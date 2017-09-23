@@ -1,5 +1,6 @@
 package com.example.skarwa.articlesearch.activities;
 
+import android.content.SharedPreferences;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +21,6 @@ import com.example.skarwa.articlesearch.decorators.SpacesItemDecoration;
 import com.example.skarwa.articlesearch.fragments.FilterSettingsDialogFragment;
 import com.example.skarwa.articlesearch.model.Article;
 import com.example.skarwa.articlesearch.network.ArticleSearchClient;
-import com.example.skarwa.articlesearch.utils.NewsDeskFilterQuery;
-import com.example.skarwa.articlesearch.utils.SortOrder;
-import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -30,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import android.support.v7.widget.SearchView;
 
@@ -39,18 +39,25 @@ import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.API_KEY;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.BEGIN_DATE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_FRAGMENT_TITLE;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_QUERY;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_SETTINGS;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MY_API_KEY;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NEWS_DESK;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.PAGE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.QUERY;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.SORT;
 
 
 public class ArticleSearchActivity extends AppCompatActivity implements FilterSettingsDialogFragment.SaveDialogListener {
     @BindView(R.id.rvResults)
     RecyclerView rvResults;
 
-    NewsDeskFilterQuery mFilterQuery;
+    SharedPreferences filterPrefs;
     String mBeginDate;
-    SortOrder mSortOrder;
+    String mSortOrder;
+    HashSet<String> mNewsDeskValues;
     ArrayList<Article> mArticles;
     ArticleAdapter mArticleAdapter;
     ArticleSearchClient mClient;
@@ -61,7 +68,13 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         setContentView(R.layout.activity_article_search);
 
         ButterKnife.bind(this);
-        mFilterQuery = new NewsDeskFilterQuery();
+
+        // Restore filter settings from Shared Preferences
+        filterPrefs = getSharedPreferences(FILTER_SETTINGS, 0);
+        mSortOrder = filterPrefs.getString(SORT,null);
+        mBeginDate = filterPrefs.getString(BEGIN_DATE,null);
+        mNewsDeskValues = (HashSet<String>) filterPrefs.getStringSet(NEWS_DESK,null);
+
         mArticles = new ArrayList<>();
         mArticleAdapter = new ArticleAdapter(this,mArticles);
 
@@ -98,12 +111,20 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
 
                 RequestParams params = new RequestParams();
-                params.put(API_KEY,"2db4291298b44a99b50c6636a9f49964");
+                params.put(API_KEY,MY_API_KEY);
                 params.put(PAGE,0);
                 params.put(QUERY,query);
-                params.put("begin_date","20170120"); //TODO: change hardcoded values
-                params.put("sort",mSortOrder.name().toLowerCase());
-                params.put("fq",mFilterQuery.getQueryString());
+                if(mBeginDate != null){
+                    params.put(BEGIN_DATE,mBeginDate);
+                }
+
+                if(mSortOrder != null){
+                    params.put(SORT,mSortOrder);
+                }
+
+                if(mNewsDeskValues != null && mNewsDeskValues.size() >= 1){
+                   params.put(FILTER_QUERY,getNewsDeskFilterQuery());
+                }
 
                 mClient.getArticles(params,new JsonHttpResponseHandler(){
                     @Override
@@ -118,15 +139,12 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                             int curSize = mArticleAdapter.getItemCount();
                             mArticles.addAll(Article.fromJsonArray(articleJsonResults));
-                            //mArticlesAdapter.notifyDataSetChanged();
 
                             mArticleAdapter.notifyItemRangeInserted(curSize, articleJsonResults.length());
                             Log.d("DEBUG",mArticles.toString());
                         } catch(JSONException e){
-                            e.printStackTrace();
+                            Log.d("ERROR",e.getMessage(),e);
                         }
-
-
                     }
                 });
 
@@ -161,18 +179,39 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
     public void launchFilterSettingDialog(){
         FragmentManager fm = getSupportFragmentManager();
-        FilterSettingsDialogFragment filterSettingsDialogFragment = FilterSettingsDialogFragment.newInstance(mBeginDate,mSortOrder, mFilterQuery);
+        FilterSettingsDialogFragment filterSettingsDialogFragment = FilterSettingsDialogFragment.newInstance(mBeginDate,mSortOrder, mNewsDeskValues);
         filterSettingsDialogFragment.show(fm,FILTER_FRAGMENT_TITLE);
     }
 
 
     @Override
-    public void onFinishEditDialog(String beginDate, SortOrder sortOrder, NewsDeskFilterQuery query) {
-        this.mFilterQuery = query;
-        this.mBeginDate = beginDate;
-        this.mSortOrder = sortOrder;
+    public void onFinishEditDialog(String beginDate, String sortOrder, HashSet<String> newsDeskValues) {
+        mBeginDate = beginDate;
+        mSortOrder = sortOrder;
+        mNewsDeskValues =  newsDeskValues;
 
-        String filterString = beginDate + sortOrder + mFilterQuery.getValueSet().toString();
-        Toast.makeText(this,filterString,Toast.LENGTH_LONG).show(); //TODO :remove
+        // We need an Editor object to make preference changes.
+        // All objects are from android.context.Context
+        SharedPreferences.Editor editor = filterPrefs.edit();
+        editor.putString(SORT, sortOrder);
+        editor.putString(BEGIN_DATE,beginDate);
+        editor.putStringSet(NEWS_DESK,newsDeskValues);
+
+        // Commit the edits!
+        editor.commit();
+
+        //TODO :remove
+        String filterString = beginDate + sortOrder + newsDeskValues.toString();
+        Toast.makeText(this,filterString,Toast.LENGTH_LONG).show();
+    }
+
+    public String getNewsDeskFilterQuery(){
+        String values = "";
+        for(String value:mNewsDeskValues){
+            values = values.concat("\""+value+"\"").concat(" ");
+        }
+
+        System.out.print(values); //TODO :remove for debug only
+        return new String(NEWS_DESK +":("+values+")");
     }
 }

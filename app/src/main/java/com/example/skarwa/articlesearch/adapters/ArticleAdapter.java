@@ -8,9 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.skarwa.articlesearch.R;
 import com.example.skarwa.articlesearch.model.Article;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -115,8 +115,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (article != null) {
             vh1.tvTitle.setText(article.getmHeadline());
 
-            Picasso.with(getContext()).load(article.getmThumbnail()).fit()
-                    .noFade()
+            Glide.with(getContext()).load(article.getmThumbnail()).fitCenter()
                     .into(vh1.ivThumbnail);
         }
     }

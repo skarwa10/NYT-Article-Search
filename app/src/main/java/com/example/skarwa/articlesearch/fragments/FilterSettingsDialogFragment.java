@@ -2,6 +2,7 @@ package com.example.skarwa.articlesearch.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,19 +13,20 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.skarwa.articlesearch.R;
-import com.example.skarwa.articlesearch.utils.NewsDeskFilterQuery;
-import com.example.skarwa.articlesearch.utils.SortOrder;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Set;
 
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.BEGIN_DATE;
-import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.DATE_FORMAT;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.DATE_FORMAT_FOR_QUERY;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.DATE_FORMAT_ON_DATE_PICKER;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_FRAGMENT_TITLE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NEWS_DESK;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.SORT;
@@ -63,6 +65,11 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
     @BindString(R.string.sports)
     String sports;
 
+    SimpleDateFormat datePickerFormatter = new SimpleDateFormat(
+            DATE_FORMAT_ON_DATE_PICKER);
+    SimpleDateFormat queryDateFormatter = new SimpleDateFormat(
+            DATE_FORMAT_FOR_QUERY);
+
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
         return false;
@@ -71,14 +78,14 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
     @Override
     public void onDateSet(Date date) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(
-                DATE_FORMAT);
+                DATE_FORMAT_ON_DATE_PICKER);
         String strDate = dateFormatter.format(date);
 
         etBeginDate.setText(strDate);
     }
 
     public interface SaveDialogListener {
-        void onFinishEditDialog(String beginDate, SortOrder sortOrder, NewsDeskFilterQuery query);
+        void onFinishEditDialog(String beginDate, String sortOrder, HashSet<String> newsDeskValueSet);
     }
 
     public FilterSettingsDialogFragment() {
@@ -87,13 +94,13 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
         // Use `newInstance` instead as shown below
     }
 
-    public static FilterSettingsDialogFragment newInstance(String date, SortOrder sortOrder, NewsDeskFilterQuery filterQuery) {
+    public static FilterSettingsDialogFragment newInstance(String date, String sortOrder, HashSet<String> newsDeskValueSet) {
         FilterSettingsDialogFragment frag = new FilterSettingsDialogFragment();
 
         Bundle args = new Bundle();
         args.putString(BEGIN_DATE, date);
-        args.putSerializable(SORT, sortOrder);
-        args.putSerializable(NEWS_DESK,filterQuery.getValueSet());
+        args.putString(SORT, sortOrder);
+        args.putSerializable(NEWS_DESK,newsDeskValueSet);
         frag.setArguments(args);
         return frag;
     }
@@ -105,14 +112,14 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
         ButterKnife.bind(this, view);
 
         String beginDate = getArguments().getString(BEGIN_DATE);
-        SortOrder sort = (SortOrder)getArguments().getSerializable(SORT);
-        HashSet<String> newsDeskSelectedOptions = (HashSet<String>)getArguments().getSerializable(NEWS_DESK);
+        String sort = getArguments().getString(SORT);
+        Set<String> newsDeskSelectedOptions = (HashSet<String>)getArguments().getSerializable(NEWS_DESK);
 
         if(beginDate!=null){
-            etBeginDate.setText(beginDate);
+            etBeginDate.setText(convertDateFormat(beginDate, queryDateFormatter,datePickerFormatter));
         }
         if(sort!= null) {
-            spSortOrder.setSelection(getIndex(spSortOrder,sort.name()));
+            spSortOrder.setSelection(getIndex(spSortOrder,sort));
         }
 
         etBeginDate.requestFocus();
@@ -146,20 +153,30 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String beginDate = etBeginDate.getText().toString();
-                String  sort = spSortOrder.getSelectedItem().toString();
-                NewsDeskFilterQuery queryFilter = new NewsDeskFilterQuery();
+                String beginDate = null;
+                String sort = null;
+
+                String datePickerDate = etBeginDate.getText().toString();
+                if(datePickerDate != null && !datePickerDate.isEmpty()){
+                    beginDate = convertDateFormat(datePickerDate,datePickerFormatter, queryDateFormatter);
+                }
+
+                if(spSortOrder.getSelectedItem() != null){
+                    sort = spSortOrder.getSelectedItem().toString().toLowerCase();
+                }
+
+                HashSet<String> newsDeskValues = new HashSet<String>();
                 if(cbArts.isChecked()){
-                    queryFilter.addValue(arts);
+                    newsDeskValues.add(arts);
                 }
                 if(cbFashionStyle.isChecked()){
-                    queryFilter.addValue(fashionAndStyle);
+                    newsDeskValues.add(fashionAndStyle);
                 }
                 if(cbSports.isChecked()){
-                    queryFilter.addValue(sports);
+                    newsDeskValues.add(sports);
                 }
                 SaveDialogListener listener = (SaveDialogListener) getActivity();
-                listener.onFinishEditDialog(beginDate,SortOrder.valueOf(sort.toUpperCase()),queryFilter);
+                listener.onFinishEditDialog(beginDate,sort,newsDeskValues);
                 dismiss();
             }
         });
@@ -169,6 +186,18 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
     public void showDatePickerDialog(View v) {
         DatePickerFragment fragment = DatePickerFragment.newInstance(this);
         fragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+    }
+
+    public String convertDateFormat(String date,SimpleDateFormat origFormat,SimpleDateFormat targetFormat){
+        if(date != null && !date.isEmpty()){
+            try {
+                Date dateObtained = origFormat.parse(date);
+                return targetFormat.format(dateObtained);
+            } catch (ParseException e) {
+                Log.d("ERROR",e.getMessage(),e);
+            }
+        }
+        return null;
     }
 
     //private method of your class
