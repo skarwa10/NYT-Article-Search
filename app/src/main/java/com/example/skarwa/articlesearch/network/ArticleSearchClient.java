@@ -12,7 +12,6 @@ import java.net.URLEncoder;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NYT_SEARCH_API_URL;
 
 public class ArticleSearchClient {
-    //private static final String API_BASE_URL = "http://openlibrary.org/";
     private AsyncHttpClient client;
 
     public ArticleSearchClient() {

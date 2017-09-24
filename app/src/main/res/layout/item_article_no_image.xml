@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:weightSum="1">
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/holo_green_light"
+    android:layout_margin="@dimen/item_margin"
+    android:padding="@dimen/item_padding">
 
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="75dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/headline" />
+        android:text="@string/headline"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
 
 </LinearLayout>

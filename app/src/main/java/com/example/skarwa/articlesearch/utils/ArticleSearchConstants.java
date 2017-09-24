@@ -26,4 +26,6 @@ public interface ArticleSearchConstants {
     static final String THUMBNAIL = "thumbnail";
     static final String MAIN = "main";
     static final String FILTER_SETTINGS = "MyFilterPrefsFile";
+    static final String TEXT_PLAIN_TYPE = "text/plain";
+    static final String SHARE_DESCRIPTION = "Share Link";
 }

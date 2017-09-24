@@ -14,4 +14,5 @@
     <string name="sort_order_label">Sort Order</string>
     <string name="begin_date_label">Begin Date</string>
     <string name="save_label">Save</string>
+    <string name="loading">Loading</string>
 </resources>

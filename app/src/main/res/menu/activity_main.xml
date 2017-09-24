@@ -5,16 +5,24 @@
     tools:context="com.example.skarwa.todoapp.activities.ToDoListActivity">
 
     <item
+        android:id="@+id/action_filter"
+        android:icon="@drawable/ic_action_filter"
+        android:title="@string/filterItem"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_action_search"
         android:title="@string/search"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always|collapseActionView" />
 
     <item
-        android:id="@+id/action_filter"
-        android:icon="@drawable/ic_action_filter"
-        android:title="@string/filterItem"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/miActionProgress"
+        android:title="@string/loading"
+        android:visible="false"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        app:actionLayout="@layout/action_view_progress" />
 
 </menu>
