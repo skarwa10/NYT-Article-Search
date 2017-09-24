@@ -15,10 +15,10 @@ import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment
         implements DatePickerDialog.OnDateSetListener {
-    private DatePickerFragmentListener mdatePickerListener;
+    private DatePickerFragmentListener mDatePickerListener;
 
-    public interface DatePickerFragmentListener {
-        public void onDateSet(Date date);
+    interface DatePickerFragmentListener {
+       void onDateSet(Date date);
     }
 
     public DatePickerFragment(){
@@ -27,22 +27,19 @@ public class DatePickerFragment extends DialogFragment
 
     public static DatePickerFragment newInstance(DatePickerFragmentListener listener) {
         DatePickerFragment fragment = new DatePickerFragment();
-        fragment.setMdatePickerListener(listener);
+        fragment.setDatePickerListener(listener);
         return fragment;
     }
 
-    public DatePickerFragmentListener getMdatePickerListener() {
-        return this.mdatePickerListener;
-    }
-
-    public void setMdatePickerListener(DatePickerFragmentListener listener) {
-        this.mdatePickerListener = listener;
+    public void setDatePickerListener(DatePickerFragmentListener listener) {
+        this.mDatePickerListener = listener;
     }
 
     protected void notifyDatePickerListener(Date date) {
-        if(this.mdatePickerListener != null) {
-            this.mdatePickerListener.onDateSet(date);
+        if (this.mDatePickerListener == null) {
+            return;
         }
+        this.mDatePickerListener.onDateSet(date);
     }
 
     @Override

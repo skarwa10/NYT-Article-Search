@@ -4,13 +4,11 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import org.json.JSONException;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NYT_SEARCH_API_URL;
 
+/**
+ *  Client class used for Network calls
+ */
 public class ArticleSearchClient {
     private AsyncHttpClient client;
 

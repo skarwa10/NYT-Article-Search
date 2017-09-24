@@ -7,7 +7,6 @@ import org.parceler.Parcel;
 
 import java.util.ArrayList;
 
-import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.HEADLINE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MAIN;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MULTIMEDIA;
@@ -19,25 +18,21 @@ import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.WEB_
 
 /**
  * Created by skarwa on 9/19/17.
+ *
+ * Article model to save data from API
  */
 @Parcel
 public class Article {
     String mWebURL;
     String mHeadline;
     String mThumbnail;
-    ArticleType mArticleType;
+    ArticleTypeEnum mArticleType;
 
-
-    public enum ArticleType {
-        HAS_IMAGE,
-        NO_IMAGE;
-    }
-
-    public Article(){
+    Article(){
 
     }
 
-    public Article(JSONObject jsonObject)  {
+    private Article(JSONObject jsonObject)  {
         try {
             this.mWebURL = jsonObject.getString(WEB_URL);
             this.mHeadline = jsonObject.getJSONObject(HEADLINE).getString(MAIN);
@@ -45,7 +40,7 @@ public class Article {
 
             if(multimedia.length() > 0){
                 JSONObject multimediaJSONObject = multimedia.getJSONObject(0);
-                this.mArticleType = ArticleType.HAS_IMAGE;
+                this.mArticleType = ArticleTypeEnum.HAS_IMAGE;
                 this.mThumbnail = NYT_IMAGE_PREFIX_URL + multimediaJSONObject.getString(MULTIMEDIA_URL);
                 //loop and find subtype = 'thumbnail'
                 for (int i=0;i<multimedia.length();i++){
@@ -57,7 +52,7 @@ public class Article {
             } else {
                 //no media..put some placeholder here maybe
                 this.mThumbnail = "";
-                this.mArticleType = ArticleType.NO_IMAGE;
+                this.mArticleType = ArticleTypeEnum.NO_IMAGE;
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -67,7 +62,7 @@ public class Article {
     public static ArrayList<Article> fromJsonArray(JSONArray array){
         ArrayList<Article> articles = new ArrayList<>();
 
-        for(int i = 0;i < array.length() ; i++){
+        for(int i = 0;i < array.length() ; i++) {
             try {
                 articles.add(new Article(array.getJSONObject(i)));
             } catch (JSONException e) {
@@ -81,15 +76,24 @@ public class Article {
         return mWebURL;
     }
 
-    public String getmHeadline() {
+    public String getHeadline() {
         return mHeadline;
     }
 
-    public String getmThumbnail() {
+    public String getThumbnail() {
         return mThumbnail;
     }
 
-    public ArticleType getmArticleType() {
+    public ArticleTypeEnum getArticleType() {
         return mArticleType;
+    }
+
+    /**
+     * Created by skarwa on 9/24/17.
+     */
+
+    public static enum ArticleTypeEnum {
+        HAS_IMAGE,
+        NO_IMAGE
     }
 }

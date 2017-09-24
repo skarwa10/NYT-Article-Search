@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.skarwa.articlesearch.R;
 
@@ -25,13 +26,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.BEGIN_DATE;
-import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.DATE_FORMAT_FOR_QUERY;
-import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.DATE_FORMAT_ON_DATE_PICKER;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_FRAGMENT_TITLE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NEWS_DESK;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.SORT;
-
-import android.widget.TextView;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.datePickerFormatter;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.queryDateFormatter;
 
 /**
  * Created by skarwa on 9/20/17.
@@ -65,10 +64,7 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
     @BindString(R.string.sports)
     String sports;
 
-    SimpleDateFormat datePickerFormatter = new SimpleDateFormat(
-            DATE_FORMAT_ON_DATE_PICKER);
-    SimpleDateFormat queryDateFormatter = new SimpleDateFormat(
-            DATE_FORMAT_FOR_QUERY);
+
 
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -77,9 +73,7 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
 
     @Override
     public void onDateSet(Date date) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(
-                DATE_FORMAT_ON_DATE_PICKER);
-        String strDate = dateFormatter.format(date);
+        String strDate = datePickerFormatter.format(date);
 
         etBeginDate.setText(strDate);
     }
@@ -123,13 +117,7 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
         }
 
         etBeginDate.requestFocus();
-        etBeginDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePickerDialog(v);
-            }
-
-        });
+        etBeginDate.setOnClickListener(v -> showDatePickerDialog());
 
         cbArts.setChecked(false);
         cbFashionStyle.setChecked(false);
@@ -150,40 +138,37 @@ public class FilterSettingsDialogFragment extends DialogFragment implements Text
         }
 
         getDialog().setTitle(FILTER_FRAGMENT_TITLE);
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String beginDate = null;
-                String sort = null;
+        btnSave.setOnClickListener(view1 -> {
+            String beginDate1 = null;
+            String sort1 = null;
 
-                String datePickerDate = etBeginDate.getText().toString();
-                if(datePickerDate != null && !datePickerDate.isEmpty()){
-                    beginDate = convertDateFormat(datePickerDate,datePickerFormatter, queryDateFormatter);
-                }
-
-                if(spSortOrder.getSelectedItem() != null){
-                    sort = spSortOrder.getSelectedItem().toString().toLowerCase();
-                }
-
-                HashSet<String> newsDeskValues = new HashSet<String>();
-                if(cbArts.isChecked()){
-                    newsDeskValues.add(arts);
-                }
-                if(cbFashionStyle.isChecked()){
-                    newsDeskValues.add(fashionAndStyle);
-                }
-                if(cbSports.isChecked()){
-                    newsDeskValues.add(sports);
-                }
-                SaveDialogListener listener = (SaveDialogListener) getActivity();
-                listener.onFinishEditDialog(beginDate,sort,newsDeskValues);
-                dismiss();
+            String datePickerDate = etBeginDate.getText().toString();
+            if(!datePickerDate.isEmpty()){
+                beginDate1 = convertDateFormat(datePickerDate,datePickerFormatter, queryDateFormatter);
             }
+
+            if(spSortOrder.getSelectedItem() != null){
+                sort1 = spSortOrder.getSelectedItem().toString().toLowerCase();
+            }
+
+            HashSet<String> newsDeskValues = new HashSet<>();
+            if(cbArts.isChecked()){
+                newsDeskValues.add(arts);
+            }
+            if(cbFashionStyle.isChecked()){
+                newsDeskValues.add(fashionAndStyle);
+            }
+            if(cbSports.isChecked()){
+                newsDeskValues.add(sports);
+            }
+            SaveDialogListener listener = (SaveDialogListener) getActivity();
+            listener.onFinishEditDialog(beginDate1, sort1,newsDeskValues);
+            dismiss();
         });
         return view;
     }
 
-    public void showDatePickerDialog(View v) {
+    public void showDatePickerDialog() {
         DatePickerFragment fragment = DatePickerFragment.newInstance(this);
         fragment.show(getActivity().getSupportFragmentManager(), "datePicker");
     }

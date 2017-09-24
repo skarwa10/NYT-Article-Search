@@ -19,14 +19,16 @@ import butterknife.ButterKnife;
 
 /**
  * Created by skarwa on 9/20/17.
+ *
+ * Adapter class which extends Recycler view with 2 layouts for list item
  */
 
 public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     private final int HAS_IMAGE = 0, NO_IMAGE = 1;
-    Context mContext;
-    ArrayList<Article> mArticles;
+    private Context mContext;
+    private ArrayList<Article> mArticles;
 
-    OnArticleSelectedListener listener;
+    private OnArticleSelectedListener listener;
 
     public interface OnArticleSelectedListener{
         void onArticleSelected(Article article);
@@ -38,7 +40,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.mArticles = articles;
     }
 
-    public class ViewHolderWithImage extends RecyclerView.ViewHolder{
+     class ViewHolderWithImage extends RecyclerView.ViewHolder{
         @BindView(R.id.tvTitle)
         TextView tvTitle;
 
@@ -47,20 +49,20 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         View view;
 
-        public ViewHolderWithImage(View itemView) {
+        ViewHolderWithImage(View itemView) {
             super(itemView);
             view = itemView;
             ButterKnife.bind(this,itemView);
         }
     }
 
-    public class ViewHolderWithNoImage extends  RecyclerView.ViewHolder{
+    class ViewHolderWithNoImage extends  RecyclerView.ViewHolder{
         @BindView(R.id.tvTitle)
         TextView tvTitle;
 
         View view;
 
-        public ViewHolderWithNoImage(View itemView) {
+       ViewHolderWithNoImage(View itemView) {
             super(itemView);
             view = itemView;
             ButterKnife.bind(this,itemView);
@@ -124,32 +126,22 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private void configureViewHolderWithImage(ViewHolderWithImage vh1, int position) {
-        final Article article = (Article) mArticles.get(position);
+        final Article article = mArticles.get(position);
         if (article != null) {
-            vh1.tvTitle.setText(article.getmHeadline());
+            vh1.tvTitle.setText(article.getHeadline());
 
-            Glide.with(getContext()).load(article.getmThumbnail()).fitCenter()
+            Glide.with(getContext()).load(article.getThumbnail()).fitCenter()
                     .into(vh1.ivThumbnail);
 
-            vh1.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onArticleSelected(article);
-                }
-            });
+            vh1.view.setOnClickListener(v -> listener.onArticleSelected(article));
         }
     }
 
     private void configureViewHolderWithNoImage(ViewHolderWithNoImage vh2,int position) {
-        final Article article = (Article) mArticles.get(position);
+        final Article article = mArticles.get(position);
         if (article != null) {
-            vh2.tvTitle.setText(article.getmHeadline());
-            vh2.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onArticleSelected(article);
-                }
-            });
+            vh2.tvTitle.setText(article.getHeadline());
+            vh2.view.setOnClickListener(v -> listener.onArticleSelected(article));
         }
     }
 
@@ -167,7 +159,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     //Returns the view type of the item at position for the purposes of view recycling.
     @Override
     public int getItemViewType(int position) {
-        return mArticles.get(position).getmArticleType().ordinal();
+        return mArticles.get(position).getArticleType().ordinal();
     }
 
     public void clear() {
@@ -175,11 +167,8 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.notifyDataSetChanged();
     }
 
-    
-
     private Context getContext() {
         return mContext;
     }
-
 
 }

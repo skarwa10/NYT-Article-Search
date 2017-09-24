@@ -7,16 +7,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.NavUtils;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,13 +29,9 @@ import com.example.skarwa.articlesearch.decorators.SpacesItemDecoration;
 import com.example.skarwa.articlesearch.fragments.FilterSettingsDialogFragment;
 import com.example.skarwa.articlesearch.listeners.EndlessRecyclerViewScrollListener;
 import com.example.skarwa.articlesearch.model.Article;
-import com.example.skarwa.articlesearch.network.ArticleResponse;
 import com.example.skarwa.articlesearch.network.ArticleSearchClient;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,15 +40,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import android.support.v7.widget.SearchView;
-
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
-import android.os.Handler;
 
-import static com.example.skarwa.articlesearch.R.string.search;
+import static android.support.v4.view.MenuItemCompat.getActionView;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.API_KEY;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.BEGIN_DATE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_FRAGMENT_TITLE;
@@ -60,7 +52,6 @@ import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILT
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.FILTER_SETTINGS;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MY_API_KEY;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NEWS_DESK;
-import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NYT_SEARCH_API_URL;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.PAGE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.QUERY;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.SHARE_DESCRIPTION;
@@ -122,29 +113,25 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
     public void initVariables() {
         mArticles = new ArrayList<>();
         mArticleAdapter = new ArticleAdapter(this, mArticles);
-        mArticleAdapter.setOnArticleClickListener(new ArticleAdapter.OnArticleSelectedListener(){
+        mArticleAdapter.setOnArticleClickListener(article -> {
+            int requestCode = 100;
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_share);
 
-            @Override
-            public void onArticleSelected(Article article) {
-                int requestCode = 100;
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_share);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType(TEXT_PLAIN_TYPE);
+            intent.putExtra(Intent.EXTRA_TEXT, article.getWebURL());
 
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType(TEXT_PLAIN_TYPE);
-                intent.putExtra(Intent.EXTRA_TEXT, article.getWebURL());
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
 
-                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                        requestCode,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+            builder.setToolbarColor(Color.GRAY);
+            builder.setActionButton(bitmap, SHARE_DESCRIPTION, pendingIntent, true);
+            CustomTabsIntent customTabsIntent = builder.build();
 
-                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-                builder.setToolbarColor(Color.GRAY);
-                builder.setActionButton(bitmap, SHARE_DESCRIPTION, pendingIntent, true);
-                CustomTabsIntent customTabsIntent = builder.build();
-
-                customTabsIntent.launchUrl(getApplicationContext(), Uri.parse(article.getWebURL()));
-            }
+            customTabsIntent.launchUrl(getApplicationContext(), Uri.parse(article.getWebURL()));
         });
         mClient = new ArticleSearchClient();
         mHandler = new Handler();
@@ -158,30 +145,24 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
             public void onLoadMore(final int page, int totalItemsCount, final RecyclerView view) {
                 final int curSize = mArticleAdapter.getItemCount();
                 // Define the code block to be executed
-                Runnable runnableCode = new Runnable() {
-                    @Override
-                    public void run() {
+                Runnable runnableCode = () -> {
 
-                        fetchArticles(page);
+                    fetchArticles(page);
 
-                        // Delay before notifying the adapter since the scroll listeners
-                        // can be called while RecyclerView data cannot be changed.
-                        view.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Notify adapter with appropriate notify methods
-                                mArticleAdapter.notifyItemRangeInserted(curSize, mArticles.size() - 1);
-                            }
-                        });
-                        // Do something here on the main thread
-                        Log.d("Handlers", "Called on main thread");
-                    }
+                    // Delay before notifying the adapter since the scroll listeners
+                    // can be called while RecyclerView data cannot be changed.
+                    view.post(() -> {
+                        // Notify adapter with appropriate notify methods
+                        mArticleAdapter.notifyItemRangeInserted(curSize, mArticles.size() - 1);
+                    });
+                    // Do something here on the main thread
+                    Log.d("Handlers", "Called on main thread");
                 };
                 // Run the above code block on the main thread after 2 seconds
                 mHandler.postDelayed(runnableCode, 2000);
             }
         };
-       // rvResults.addOnScrollListener(mScrollListener);
+        rvResults.addOnScrollListener(mScrollListener);
         rvResults.addItemDecoration(decoration);
         rvResults.setLayoutManager(staggeredGridLayoutManager);
         rvResults.setAdapter(mArticleAdapter);
@@ -196,7 +177,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
-        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        mSearchView = (SearchView) getActionView(searchItem);
         mSearchView.setOnQueryTextListener(createQueryTextListener());
         mSearchView.setOnCloseListener(createOnCloseListener());
         searchItem.expandActionView();
@@ -210,25 +191,10 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         // Store instance of the menu item containing progress
         miActionProgressItem = menu.findItem(R.id.miActionProgress);
         // Extract the action-view from the menu item
-        ProgressBar v = (ProgressBar) MenuItemCompat.getActionView(miActionProgressItem);
+        ProgressBar v = (ProgressBar) getActionView(miActionProgressItem);
         // Return to finish
         return super.onPrepareOptionsMenu(menu);
     }
-
-    public void showProgressBar() {
-        // Show progress item
-        miActionProgressItem.setVisible(true);
-    }
-
-    public void hideProgressBar() {
-        // Hide progress item
-        miActionProgressItem.setVisible(false);
-    }
-
-
-
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -256,7 +222,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                 //super.onSuccess(statusCode, headers, response);
                 Log.d("DEBUG", response.toString());
-                JSONArray articleJsonResults = null;
+                JSONArray articleJsonResults;
 
                 try {
                     articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
@@ -293,7 +259,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         editor.putStringSet(NEWS_DESK, newsDeskValues);
 
         // Commit the edits!
-        editor.commit();
+        editor.apply();
 
         //Do query again using filters
         mSearchView.setQuery(queryString,true);
@@ -308,7 +274,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         for (String value : mNewsDeskValues) {
             values = values.concat("\"" + value + "\"").concat(" ");
         }
-
         System.out.print(values); //TODO :remove for debug only
         return new String(NEWS_DESK + ":(" + values + ")");
     }
@@ -335,40 +300,37 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                 Log.d("DEBUG", "------------Page: 0 "); //TODO: remove
 
-                Runnable runnableCode = new Runnable() {
-                    @Override
-                    public void run() {
-                        mClient.getArticles(getParams(0), new JsonHttpResponseHandler() {
+                Runnable runnableCode = () -> {
+                    mClient.getArticles(getParams(0), new JsonHttpResponseHandler() {
 
-                            @Override
-                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                Log.d("DEBUG", response.toString());
-                                JSONArray articleJsonResults = null;
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                            Log.d("DEBUG", response.toString());
+                            JSONArray articleJsonResults;
 
-                                try {
-                                    articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                                    Log.d("DEBUG", articleJsonResults.toString());
+                            try {
+                                articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                                Log.d("DEBUG", articleJsonResults.toString());
 
-                                    mArticles.addAll(Article.fromJsonArray(articleJsonResults));
-                                    mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
+                                mArticles.addAll(Article.fromJsonArray(articleJsonResults));
+                                mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
 
-                                    Log.d("DEBUG", mArticles.toString());
-                                } catch (JSONException e) {
-                                    Log.e("ERROR", e.toString());
-                                }
+                                Log.d("DEBUG", mArticles.toString());
+                            } catch (JSONException e) {
+                                Log.e("ERROR", e.toString());
                             }
+                        }
 
-                            @Override
-                            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                                Log.e("ERROR", errorResponse.toString(), throwable);
-                            }
-                        });
-                        hideProgressBar();
-                        mSearchView.clearFocus();
+                        @Override
+                        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                            Log.e("ERROR", errorResponse.toString(), throwable);
+                        }
+                    });
+                    hideProgressBar();
+                    mSearchView.clearFocus();
 
-                        Log.d("Handlers", "Called on main thread");
+                    Log.d("Handlers", "Called on main thread");
 
-                    }
                 };
                 // Run the above code block on the main thread after 2 seconds
                 mHandler.postDelayed(runnableCode, 2000);
@@ -383,15 +345,22 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
     }
 
     public SearchView.OnCloseListener createOnCloseListener() {
-        return new SearchView.OnCloseListener() {
-            @Override
-            public boolean onClose() {
-                Log.i("SearchView:", "onClose");
-                mSearchView.onActionViewCollapsed();
-                getSupportActionBar().setDisplayShowTitleEnabled(true);
-                return false;
-            }
+        return () -> {
+            Log.i("SearchView:", "onClose");
+            mSearchView.onActionViewCollapsed();
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+            return false;
         };
+    }
+
+    public void showProgressBar() {
+        // Show progress item
+        miActionProgressItem.setVisible(true);
+    }
+
+    public void hideProgressBar() {
+        // Hide progress item
+        miActionProgressItem.setVisible(false);
     }
 
     private RequestParams getParams(int page) {
