@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,6 +31,7 @@ import com.example.skarwa.articlesearch.fragments.FilterSettingsDialogFragment;
 import com.example.skarwa.articlesearch.listeners.EndlessRecyclerViewScrollListener;
 import com.example.skarwa.articlesearch.model.Article;
 import com.example.skarwa.articlesearch.network.ArticleSearchClient;
+import com.example.skarwa.articlesearch.wrapper.WrapStaggeredGridLayoutManager;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -127,7 +129,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-            builder.setToolbarColor(Color.GRAY);
+            builder.setToolbarColor(Color.rgb(3,169,244)); //same as tab color
             builder.setActionButton(bitmap, SHARE_DESCRIPTION, pendingIntent, true);
             CustomTabsIntent customTabsIntent = builder.build();
 
@@ -153,7 +155,9 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                     // can be called while RecyclerView data cannot be changed.
                     view.post(() -> {
                         // Notify adapter with appropriate notify methods
-                        mArticleAdapter.notifyItemRangeInserted(curSize, mArticles.size() - 1);
+                        if(curSize < mArticles.size()){
+                            mArticleAdapter.notifyItemRangeInserted(curSize, mArticles.size() - 1);
+                        }
                     });
                     // Do something here on the main thread
                     Log.d("Handlers", "Called on main thread");
@@ -164,7 +168,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         };
         rvResults.addOnScrollListener(mScrollListener);
         rvResults.addItemDecoration(decoration);
-        rvResults.setLayoutManager(staggeredGridLayoutManager);
+        rvResults.setLayoutManager(new WrapStaggeredGridLayoutManager(2,LinearLayoutManager.VERTICAL));
         rvResults.setAdapter(mArticleAdapter);
     }
 
@@ -180,6 +184,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         mSearchView = (SearchView) getActionView(searchItem);
         mSearchView.setOnQueryTextListener(createQueryTextListener());
         mSearchView.setOnCloseListener(createOnCloseListener());
+
         searchItem.expandActionView();
         mSearchView.requestFocus();
 
@@ -214,13 +219,11 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
     }
 
     public void fetchArticles(int page) {
-        Log.d("DEBUG", "------------Page:" + page); //TODO: remove
+        Log.d("DEBUG", " Loading Page:" + page);
 
         mClient.getArticles(getParams(page), new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-
-                //super.onSuccess(statusCode, headers, response);
                 Log.d("DEBUG", response.toString());
                 JSONArray articleJsonResults;
 
@@ -263,10 +266,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
         //Do query again using filters
         mSearchView.setQuery(queryString,true);
-
-        //TODO :remove
-        String filterString = beginDate + sortOrder + newsDeskValues.toString();
-        Toast.makeText(this, filterString, Toast.LENGTH_LONG).show();
     }
 
     public String getNewsDeskFilterQuery() {
@@ -274,7 +273,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         for (String value : mNewsDeskValues) {
             values = values.concat("\"" + value + "\"").concat(" ");
         }
-        System.out.print(values); //TODO :remove for debug only
         return new String(NEWS_DESK + ":(" + values + ")");
     }
 
@@ -283,8 +281,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // perform query here
-
-                getSupportActionBar().setDisplayShowTitleEnabled(false);
 
                 showProgressBar();
 
@@ -295,10 +291,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                 queryString = query;
 
-                //TODO : remove
-
-
-                Log.d("DEBUG", "------------Page: 0 "); //TODO: remove
+                Log.d("DEBUG", "Loading Page:0");
 
                 Runnable runnableCode = () -> {
                     mClient.getArticles(getParams(0), new JsonHttpResponseHandler() {
@@ -313,8 +306,10 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                                 Log.d("DEBUG", articleJsonResults.toString());
 
                                 mArticles.addAll(Article.fromJsonArray(articleJsonResults));
-                                mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
 
+                                if(mArticles.size() > 0){
+                                    mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
+                                }
                                 Log.d("DEBUG", mArticles.toString());
                             } catch (JSONException e) {
                                 Log.e("ERROR", e.toString());

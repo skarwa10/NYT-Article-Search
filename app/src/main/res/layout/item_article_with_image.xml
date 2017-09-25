@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_margin="@dimen/item_margin"
     android:padding="@dimen/item_padding"
-    android:background="@android:color/holo_green_light"
+    android:background="@color/colorListBackground"
     android:orientation="vertical" android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
@@ -15,6 +15,16 @@
         android:adjustViewBounds="true"
         tools:src="@mipmap/ic_launcher" />
 
+    <EditText
+        android:id="@+id/etNewsDeskCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:textColor="@android:color/white"
+        android:textAllCaps="true"
+        android:clickable="false"
+        android:textAlignment="center" />
+
     <!--android:scaleType="center"-->
 
     <TextView
@@ -22,6 +32,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/headline"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+        android:textAlignment="viewStart"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="@color/colorFontBlack"
+        android:textSize="18sp"/>
 
 </LinearLayout>

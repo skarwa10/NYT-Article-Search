@@ -7,9 +7,10 @@ import java.text.SimpleDateFormat;
  */
 
 public interface ArticleSearchConstants {
-    String MY_API_KEY = "2db4291298b44a99b50c6636a9f49964";
+    String MY_API_KEY = "582b0e6a800f497ebc911c273f44a027";
     String BEGIN_DATE = "begin_date";
     String NEWS_DESK = "news_desk";
+    String NEW_DESK = "new_desk";
     String FILTER_QUERY = "fq";
     String SORT = "sort";
     String FILTER_FRAGMENT_TITLE = "Search Filter";

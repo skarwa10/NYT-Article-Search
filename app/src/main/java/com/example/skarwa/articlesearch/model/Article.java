@@ -11,6 +11,7 @@ import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.HEAD
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MAIN;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MULTIMEDIA;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.MULTIMEDIA_URL;
+import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NEW_DESK;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.NYT_IMAGE_PREFIX_URL;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.SUB_TYPE;
 import static com.example.skarwa.articlesearch.utils.ArticleSearchConstants.THUMBNAIL;
@@ -27,6 +28,7 @@ public class Article {
     String mHeadline;
     String mThumbnail;
     ArticleTypeEnum mArticleType;
+    String mNewDesk;
 
     Article(){
 
@@ -36,7 +38,8 @@ public class Article {
         try {
             this.mWebURL = jsonObject.getString(WEB_URL);
             this.mHeadline = jsonObject.getJSONObject(HEADLINE).getString(MAIN);
-            JSONArray multimedia = jsonObject.getJSONArray(MULTIMEDIA); //TODO:handle error is multimedia is empty
+            this.mNewDesk = jsonObject.getString(NEW_DESK);
+            JSONArray multimedia = jsonObject.getJSONArray(MULTIMEDIA);
 
             if(multimedia.length() > 0){
                 JSONObject multimediaJSONObject = multimedia.getJSONObject(0);
@@ -86,6 +89,10 @@ public class Article {
 
     public ArticleTypeEnum getArticleType() {
         return mArticleType;
+    }
+
+    public String getNewDesk() {
+        return mNewDesk;
     }
 
     /**

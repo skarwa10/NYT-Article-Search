@@ -2,4 +2,8 @@
 <resources>
     <dimen name="item_margin">5dp</dimen>
     <dimen name="item_padding">5dp</dimen>
+    <dimen name="checkbox_margin_top">10dp</dimen>
+    <dimen name="saveBtnTopMargin">20dp</dimen>
+    <dimen name="beginDate_top_margin">30dp</dimen>
+    <dimen name="news_desk_left_margin">80dp</dimen>
 </resources>

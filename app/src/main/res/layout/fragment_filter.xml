@@ -8,17 +8,21 @@
         android:id="@+id/tvBeginDateLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="46dp"
+        android:layout_marginTop="@dimen/beginDate_top_margin"
         android:text="@string/begin_date_label"
         android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/colorLightBlue"
         android:textStyle="bold" />
 
     <EditText
         android:id="@+id/etBeginDateField"
-        android:layout_width="163dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:textAlignment="center"
         android:inputType="date"
         android:layout_below="@+id/tvBeginDateLabel"
         android:layout_centerHorizontal="true" />
@@ -27,18 +31,22 @@
         android:id="@+id/tvSortOrderLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/etBeginDateField"
         android:layout_marginTop="41dp"
         android:text="@string/sort_order_label"
         android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/colorLightBlue"
         android:textStyle="bold" />
 
     <Spinner
         android:id="@+id/spSortOrder"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:spinnerMode="dropdown"
         android:entries="@array/sort_order_array"
         android:layout_below="@+id/tvSortOrderLabel"
@@ -49,40 +57,44 @@
         android:id="@+id/tvNewsDeskLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/spSortOrder"
         android:layout_marginTop="47dp"
         android:text="@string/news_desk_values"
         android:textAlignment="center"
-        android:textStyle="bold"
-        android:layout_alignParentEnd="true" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/colorLightBlue"
+        android:textStyle="bold" />
 
     <CheckBox
         android:id="@+id/cbArts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="@dimen/checkbox_margin_top"
         android:text="@string/arts"
+        android:layout_marginLeft="@dimen/news_desk_left_margin"
         android:layout_below="@+id/tvNewsDeskLabel"
-        android:layout_centerHorizontal="true" />
+         />
 
     <CheckBox
         android:id="@+id/cbFashingStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/fashion_style"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="@dimen/checkbox_margin_top"
         android:layout_below="@+id/cbArts"
-        android:layout_alignStart="@+id/cbArts" />
+        android:layout_marginLeft="@dimen/news_desk_left_margin" />
 
     <CheckBox
         android:id="@+id/cbSports"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sports"
-        android:layout_marginTop="29dp"
+        android:layout_marginTop="@dimen/checkbox_margin_top"
         android:layout_below="@+id/cbFashingStyle"
-        android:layout_alignStart="@+id/cbFashingStyle" />
+        android:layout_marginLeft="@dimen/news_desk_left_margin" />
 
     <Button
         android:id="@+id/btnSave"
@@ -91,6 +103,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
+        android:layout_marginTop="@dimen/saveBtnTopMargin"
         style="@style/NiceButton"
         android:text="@string/save_label" />
 

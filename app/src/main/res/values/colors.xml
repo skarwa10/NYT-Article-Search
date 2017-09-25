@@ -3,4 +3,13 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorListBackground">#B3E5FC</color>
+    <color name="colorLightBlue">#03A9F4</color>
+    <color name="colorDarkBlue">#2962ff</color>
+    <color name="colorFontBlack">#000000</color>
+
+    <color name="colorSports">#43A047</color>
+    <color name="colorFashionStyle">#FF4081</color>
+    <color name="colorArts">#FF9800</color>
+    <color name="colorDefault">#F44336</color>
 </resources>

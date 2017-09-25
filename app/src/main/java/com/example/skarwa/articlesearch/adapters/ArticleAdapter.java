@@ -1,10 +1,12 @@
 package com.example.skarwa.articlesearch.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,23 +16,23 @@ import com.example.skarwa.articlesearch.model.Article;
 
 import java.util.ArrayList;
 
+import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
  * Created by skarwa on 9/20/17.
- *
+ * <p>
  * Adapter class which extends Recycler view with 2 layouts for list item
  */
 
-public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
+public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final int HAS_IMAGE = 0, NO_IMAGE = 1;
     private Context mContext;
     private ArrayList<Article> mArticles;
-
     private OnArticleSelectedListener listener;
 
-    public interface OnArticleSelectedListener{
+    public interface OnArticleSelectedListener {
         void onArticleSelected(Article article);
     }
 
@@ -38,34 +40,41 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public ArticleAdapter(Context context, ArrayList<Article> articles) {
         this.mContext = context;
         this.mArticles = articles;
+
     }
 
-     class ViewHolderWithImage extends RecyclerView.ViewHolder{
+    class ViewHolderWithImage extends RecyclerView.ViewHolder {
         @BindView(R.id.tvTitle)
         TextView tvTitle;
 
         @BindView(R.id.ivThumbnail)
         ImageView ivThumbnail;
 
+        @BindView(R.id.etNewsDeskCategory)
+        EditText etNewsDeskCategory;
+
         View view;
 
         ViewHolderWithImage(View itemView) {
             super(itemView);
             view = itemView;
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 
-    class ViewHolderWithNoImage extends  RecyclerView.ViewHolder{
+    class ViewHolderWithNoImage extends RecyclerView.ViewHolder {
         @BindView(R.id.tvTitle)
         TextView tvTitle;
 
+        @BindView(R.id.etNewsDeskCategory)
+        EditText etNewsDeskCategory;
+
         View view;
 
-       ViewHolderWithNoImage(View itemView) {
+        ViewHolderWithNoImage(View itemView) {
             super(itemView);
             view = itemView;
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 
@@ -73,7 +82,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * This method creates different RecyclerView.ViewHolder objects based on the item view type.\
      *
      * @param viewGroup ViewGroup container for the item
-     * @param viewType type of view to be inflated
+     * @param viewType  type of view to be inflated
      * @return viewHolder to be inflated
      */
     @Override
@@ -81,7 +90,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         RecyclerView.ViewHolder viewHolder;
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
-        System.out.print("viewType:"+viewType);
+        System.out.print("viewType:" + viewType);
         switch (viewType) {
             case HAS_IMAGE:
                 View v1 = inflater.inflate(R.layout.item_article_with_image, viewGroup, false);
@@ -105,7 +114,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * and also sets up some private fields to be used by RecyclerView.
      *
      * @param viewHolder The type of RecyclerView.ViewHolder to populate
-     * @param position Item position in the viewgroup.
+     * @param position   Item position in the viewgroup.
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
@@ -126,27 +135,47 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private void configureViewHolderWithImage(ViewHolderWithImage vh1, int position) {
-        final Article article = mArticles.get(position);
+        Article article = mArticles.get(position);
         if (article != null) {
             vh1.tvTitle.setText(article.getHeadline());
+            String new_desk = article.getNewDesk();
+            vh1.etNewsDeskCategory.setText(new_desk);
+            vh1.etNewsDeskCategory.setBackgroundResource(getColor(new_desk));
 
             Glide.with(getContext()).load(article.getThumbnail()).fitCenter()
                     .into(vh1.ivThumbnail);
 
-            vh1.view.setOnClickListener(v -> listener.onArticleSelected(article));
+            vh1.view.setOnClickListener(v -> {
+                listener.onArticleSelected(article);
+            });
         }
     }
 
-    private void configureViewHolderWithNoImage(ViewHolderWithNoImage vh2,int position) {
-        final Article article = mArticles.get(position);
+    private void configureViewHolderWithNoImage(ViewHolderWithNoImage vh2, int position) {
+        Article article = mArticles.get(position);
         if (article != null) {
+            String new_desk = article.getNewDesk();
             vh2.tvTitle.setText(article.getHeadline());
-            vh2.view.setOnClickListener(v -> listener.onArticleSelected(article));
+            vh2.etNewsDeskCategory.setText(new_desk);
+            vh2.etNewsDeskCategory.setBackgroundResource(getColor(new_desk));
+            vh2.view.setOnClickListener(v -> {
+                listener.onArticleSelected(article);
+            });
         }
     }
 
-
-    public void setOnArticleClickListener(OnArticleSelectedListener listener){
+    private int getColor(String newDesk) {
+        if(newDesk.equalsIgnoreCase("Sports")){
+            return R.color.colorSports;
+        } else if(newDesk.equalsIgnoreCase("Fashion & Style")){
+            return R.color.colorFashionStyle;
+        } else if (newDesk.equalsIgnoreCase("Arts")){
+            return R.color.colorArts;
+        } else {
+            return R.color.colorDefault;
+        }
+    }
+    public void setOnArticleClickListener(OnArticleSelectedListener listener) {
         this.listener = listener;
     }
 
@@ -163,8 +192,11 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void clear() {
-        mArticles.clear();
-        this.notifyDataSetChanged();
+        int size = getItemCount();
+        if (!mArticles.isEmpty()) {
+            mArticles.clear();
+           notifyItemRangeRemoved(0,size);
+        }
     }
 
     private Context getContext() {
