@@ -21,6 +21,7 @@ The following **required** functionality is completed:
 The following **optional** features are implemented:
 
 * [ ] Implements robust error handling, [check if internet is available](http://guides.codepath.com/android/Sending-and-Managing-Network-Requests#checking-for-network-connectivity), handle error cases, network failures
+To a certain extent.
 * [ Yes ] Used the **ActionBar SearchView** or custom layout as the query box instead of an EditText
 * [ Yes ] User can **share an article link** to their friends or email it to themselves
 * [ Yes ] Replaced Filter Settings Activity with a lightweight modal overlay
@@ -40,14 +41,15 @@ The following **bonus** features are implemented:
 
 The following **additional** features are implemented:
 
-* [ ] List anything else that you can get done to improve the app functionality!
+* [ Yes ] List anything else that you can get done to improve the app functionality!
 Added Progress Bar 
+Handled error to a certain extent.
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://g.recordit.co/7OnKZyIfUW.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 

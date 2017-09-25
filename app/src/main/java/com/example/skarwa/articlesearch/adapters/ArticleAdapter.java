@@ -188,7 +188,10 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     //Returns the view type of the item at position for the purposes of view recycling.
     @Override
     public int getItemViewType(int position) {
-        return mArticles.get(position).getArticleType().ordinal();
+        if(mArticles.get(position)!=null){
+            return mArticles.get(position).getArticleType().ordinal();
+        }
+        return 0;
     }
 
     public void clear() {

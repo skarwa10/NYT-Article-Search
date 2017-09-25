@@ -30,6 +30,15 @@ public class Article {
     ArticleTypeEnum mArticleType;
     String mNewDesk;
 
+    /**
+     * Created by skarwa on 9/24/17.
+     */
+
+    public static enum ArticleTypeEnum {
+        HAS_IMAGE,
+        NO_IMAGE
+    }
+
     Article(){
 
     }
@@ -38,7 +47,11 @@ public class Article {
         try {
             this.mWebURL = jsonObject.getString(WEB_URL);
             this.mHeadline = jsonObject.getJSONObject(HEADLINE).getString(MAIN);
-            this.mNewDesk = jsonObject.getString(NEW_DESK);
+            if(jsonObject.has(NEW_DESK)){
+                this.mNewDesk = jsonObject.getString(NEW_DESK);
+            } else{
+                this.mNewDesk = "No Category";
+            }
             JSONArray multimedia = jsonObject.getJSONArray(MULTIMEDIA);
 
             if(multimedia.length() > 0){
@@ -93,14 +106,5 @@ public class Article {
 
     public String getNewDesk() {
         return mNewDesk;
-    }
-
-    /**
-     * Created by skarwa on 9/24/17.
-     */
-
-    public static enum ArticleTypeEnum {
-        HAS_IMAGE,
-        NO_IMAGE
     }
 }

@@ -78,6 +78,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
     String queryString;
 
     Handler mHandler;
+    Runnable fetchArticlesThread;
 
     MenuItem miActionProgressItem;
     SearchView mSearchView;
@@ -129,7 +130,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-            builder.setToolbarColor(Color.rgb(3,169,244)); //same as tab color
+            builder.setToolbarColor(Color.rgb(3, 169, 244)); //same as tab color
             builder.setActionButton(bitmap, SHARE_DESCRIPTION, pendingIntent, true);
             CustomTabsIntent customTabsIntent = builder.build();
 
@@ -140,14 +141,14 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
     }
 
     public void initRecyclerView() {
-        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL);
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new WrapStaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL);
         staggeredGridLayoutManager.scrollToPosition(0);
         SpacesItemDecoration decoration = new SpacesItemDecoration(16);
         mScrollListener = new EndlessRecyclerViewScrollListener(staggeredGridLayoutManager) {
             public void onLoadMore(final int page, int totalItemsCount, final RecyclerView view) {
-                final int curSize = mArticleAdapter.getItemCount();
                 // Define the code block to be executed
-                Runnable runnableCode = () -> {
+               fetchArticlesThread = () -> {
+                    int curSize = mArticleAdapter.getItemCount();
 
                     fetchArticles(page);
 
@@ -155,7 +156,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                     // can be called while RecyclerView data cannot be changed.
                     view.post(() -> {
                         // Notify adapter with appropriate notify methods
-                        if(curSize < mArticles.size()){
+                        if(mArticles.size() > curSize){
                             mArticleAdapter.notifyItemRangeInserted(curSize, mArticles.size() - 1);
                         }
                     });
@@ -163,12 +164,12 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
                     Log.d("Handlers", "Called on main thread");
                 };
                 // Run the above code block on the main thread after 2 seconds
-                mHandler.postDelayed(runnableCode, 2000);
+                mHandler.postDelayed(fetchArticlesThread,2000);
             }
         };
         rvResults.addOnScrollListener(mScrollListener);
         rvResults.addItemDecoration(decoration);
-        rvResults.setLayoutManager(new WrapStaggeredGridLayoutManager(2,LinearLayoutManager.VERTICAL));
+        rvResults.setLayoutManager(staggeredGridLayoutManager);
         rvResults.setAdapter(mArticleAdapter);
     }
 
@@ -233,6 +234,10 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                     mArticles.addAll(Article.fromJsonArray(articleJsonResults));
 
+                    if (mArticles.size() > 0) {
+                        mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
+                    }
+
                     Log.d("DEBUG", mArticles.toString());
                 } catch (JSONException e) {
                     Log.e("ERROR", e.toString());
@@ -242,10 +247,15 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 // Handle the failure and alert the user to retry
+                if (statusCode == 429) {
+                    Log.e("ERROR", "API Limit Exceeded ...." + errorResponse.toString(), throwable);
+                    mHandler.postDelayed(fetchArticlesThread,2000);
+                }
                 Log.e("ERROR", errorResponse.toString(), throwable);
             }
         });
     }
+
 
 
     @Override
@@ -265,7 +275,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
         editor.apply();
 
         //Do query again using filters
-        mSearchView.setQuery(queryString,true);
+        mSearchView.setQuery(queryString, true);
     }
 
     public String getNewsDeskFilterQuery() {
@@ -291,44 +301,10 @@ public class ArticleSearchActivity extends AppCompatActivity implements FilterSe
 
                 queryString = query;
 
-                Log.d("DEBUG", "Loading Page:0");
+                fetchArticles(0);
 
-                Runnable runnableCode = () -> {
-                    mClient.getArticles(getParams(0), new JsonHttpResponseHandler() {
-
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                            Log.d("DEBUG", response.toString());
-                            JSONArray articleJsonResults;
-
-                            try {
-                                articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                                Log.d("DEBUG", articleJsonResults.toString());
-
-                                mArticles.addAll(Article.fromJsonArray(articleJsonResults));
-
-                                if(mArticles.size() > 0){
-                                    mArticleAdapter.notifyItemRangeInserted(0, mArticles.size() - 1);
-                                }
-                                Log.d("DEBUG", mArticles.toString());
-                            } catch (JSONException e) {
-                                Log.e("ERROR", e.toString());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                            Log.e("ERROR", errorResponse.toString(), throwable);
-                        }
-                    });
-                    hideProgressBar();
-                    mSearchView.clearFocus();
-
-                    Log.d("Handlers", "Called on main thread");
-
-                };
-                // Run the above code block on the main thread after 2 seconds
-                mHandler.postDelayed(runnableCode, 2000);
+                hideProgressBar();
+                mSearchView.clearFocus();
                 return true;
             }
 
