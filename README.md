@@ -49,9 +49,9 @@ Handled error to a certain extent.
 
 Here's a walkthrough of implemented user stories:
 
-<img src='https://www.dropbox.com/s/uob7b6czv32e2kw/7OnKZyIfUW.mp4?dl=0' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+[Link to Video Walkthrough](https://www.dropbox.com/s/uob7b6czv32e2kw/7OnKZyIfUW.mp4?dl=0)
 
-GIF created with [RecordIt](http://recordit.co/).
+mp4 created with [RecordIt](http://recordit.co/).
 
 ## Notes
 
